@@ -1,7 +1,13 @@
 package com.example.wear;
 
 import android.app.Activity;
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.wear.databinding.ActivityMainBinding;
@@ -34,51 +40,64 @@ import java.util.Date;
 
 public class MainActivity extends Activity {
 
-    TextView txtDateTime;
-    Button btnTime;
-    Calendar dateTime = Calendar.getInstance();
-    Button btnStartClock;
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    private SensorManager sysmanager;
+    private Sensor sensor;
+    private ImageView img;
+    private TextView txt;
+    private SensorEventListener sv;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        btnStartClock = findViewById(R.id.btnStartClock);
-        txtDateTime = findViewById(R.id.txtDateTime);
-        btnTime = findViewById(R.id.btnTime);
+        txt = findViewById(R.id.txt);
+        img = findViewById(R.id.img);
 
-        btnStartClock.setOnClickListener(view -> {
-            long seconds = (dateTime.getTimeInMillis() - System.currentTimeMillis()) / 1000;
-            seconds = seconds < 0 ? 24 * 60 * 60 + seconds: seconds;
-            Toast.makeText(this, "Будильник установлен!", Toast.LENGTH_LONG).show();
-            //Toast.makeText(this, String.valueOf(seconds), Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(MainActivity.this, Alarm.class);
-            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-            alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + seconds * 1000L - 60, PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0));
-        });
+        sysmanager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if(sysmanager != null)
+            sensor = sysmanager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 
-
-        txtDateTime.setText(DateUtils.formatDateTime(this, dateTime.getTimeInMillis(), DateUtils.FORMAT_SHOW_TIME));
-
-        TimePickerDialog.OnTimeSetListener t = new TimePickerDialog.OnTimeSetListener() {
+        sv = new SensorEventListener() {
             @Override
-            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                dateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                dateTime.set(Calendar.MINUTE, minute);
-                txtDateTime.setText(DateUtils.formatDateTime(getApplicationContext(), dateTime.getTimeInMillis(), DateUtils.FORMAT_SHOW_TIME));
+            public void onSensorChanged(SensorEvent event) {
+                float[] rotationMatrix = new float[16];
+                SensorManager.getRotationMatrixFromVector(
+                        rotationMatrix, event.values
+                );
+                float[] remappedRotationMatrix = new float[16];
+                SensorManager.remapCoordinateSystem(
+                        rotationMatrix,
+                        SensorManager.AXIS_X,
+                        SensorManager.AXIS_Z,
+                        remappedRotationMatrix
+                );
+                float[] orientations = new float[3];
+                SensorManager.getOrientation(remappedRotationMatrix, orientations);
+                for(int i = 0; i < 3; i++){
+                    orientations[i] = (float)(Math.toDegrees(orientations[i]));
+                }
+
+                txt.setText("z: " + String.valueOf((int)-orientations[2]) + " y: " + String.valueOf((int)-orientations[0]) + " x: " + String.valueOf((int)-orientations[1]));
+
+                img.setRotation(-orientations[2]);
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
             }
         };
+    }
 
-        btnTime.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                new TimePickerDialog(MainActivity.this, t,
-                        dateTime.get(Calendar.HOUR_OF_DAY),
-                        dateTime.get(Calendar.MINUTE), true).show();
-            }
-        });
+    @Override
+    protected void onResume(){
+        super.onResume();
+        sysmanager.registerListener(sv, sensor, SensorManager.SENSOR_DELAY_FASTEST);
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        sysmanager.unregisterListener(sv);
     }
 }

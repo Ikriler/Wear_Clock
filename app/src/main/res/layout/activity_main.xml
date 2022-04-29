@@ -8,41 +8,28 @@
     tools:context=".MainActivity"
     tools:deviceIds="wear">
 
-    <androidx.constraintlayout.widget.ConstraintLayout android:layout_height="wrap_content" android:layout_width="wrap_content">
-        <Button
-            android:id="@+id/btnStartClock"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Запустить будильник"
-            app:layout_constraintTop_toBottomOf="@id/btnTime"
-            app:layout_constraintStart_toStartOf="@id/btnTime"
-            app:layout_constraintEnd_toEndOf="@id/btnTime"
-            />
-
+    <androidx.constraintlayout.widget.ConstraintLayout android:layout_height="match_parent" android:layout_width="match_parent">
         <TextView
-            android:id="@+id/txtDateTime"
-            android:layout_width="0dp"
-            android:textSize="20dp"
+            android:id="@+id/txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="rotation"
+            android:textColor="@android:color/white"
+            android:textSize="24sp"
             android:textStyle="bold"
-            android:layout_height="wrap_content"
-            android:text="ВРЕМЯ"
-            android:gravity="center"
-            android:layout_marginTop="20dp"
-            app:layout_constraintBottom_toTopOf="@+id/btnTime"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_margin="20dp"/>
 
-        <Button
-            android:id="@+id/btnTime"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Установить время"
-            android:layout_marginTop="10dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtDateTime"
-            />
+        <ImageView
+            android:id="@+id/img"
+            android:layout_width="300dp"
+            android:layout_height="10dp"
+            app:layout_constraintBottom_toTopOf="@id/txt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:src="@android:color/white"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.wear.widget.BoxInsetLayout>
